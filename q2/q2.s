@@ -1,34 +1,24 @@
-.section .rodata
-fmt_int:    .asciz "%ld "
-fmt_end:    .asciz "\n"
-
 .section .bss
 .align 3
-arr:    .space 8000
-res:    .space 8000
-stack:  .space 8000
+arr: .space 8000
+res: .space 8000
+stk: .space 8000
+buf: .space 32
 
 .section .text
-.globl main
+.globl _start
 .extern atoi
-.extern printf
 
-main:
-    addi sp, sp, -32
-    sd ra, 24(sp)
-    sd s0, 16(sp)
-    sd s1, 8(sp)
-    sd s2, 0(sp)
+_start:
+    mv s0, a0
+    mv s1, a1
 
-    mv s0, a0          # argc
-    mv s1, a1          # argv
+    addi s0, s0, -1
+    blez s0, exit
 
-    addi s0, s0, -1    # n
-    blez s0, done
+    li s2, 0
 
-    li s2, 0           # i = 0
-
-parse_loop:
+parse:
     bge s2, s0, process
 
     addi t0, s2, 1
@@ -44,90 +34,134 @@ parse_loop:
     sd a0, 0(t2)
 
     addi s2, s2, 1
-    j parse_loop
+    j parse
 
 process:
-    li t6, -1          # top = -1
-    addi t0, s0, -1    # i = n-1
+    li t6, -1
+    addi t0, s0, -1
 
-outer_loop:
+outer:
     blt t0, zero, print
 
-while_loop:
-    blt t6, zero, after_while
+while:
+    blt t6, zero, after
 
     slli t1, t6, 3
-    la t2, stack
+    la t2, stk
     add t2, t2, t1
     ld t3, 0(t2)
 
-    slli t4, t3, 3
-    la t5, arr
-    add t5, t5, t4
-    ld t4, 0(t5)
+    slli t1, t3, 3
+    la t2, arr
+    add t2, t2, t1
+    ld t4, 0(t2)
 
     slli t1, t0, 3
     la t2, arr
     add t2, t2, t1
     ld t5, 0(t2)
 
-    bgt t4, t5, after_while
+    bgt t4, t5, after
 
     addi t6, t6, -1
-    j while_loop
+    j while
 
-after_while:
+after:
     slli t1, t0, 3
     la t2, res
     add t2, t2, t1
 
-    blt t6, zero, set_minus1
+    blt t6, zero, setm1
 
-    slli t3, t6, 3
-    la t4, stack
-    add t4, t4, t3
-    ld t5, 0(t4)
-    sd t5, 0(t2)
-    j push_stack
+    slli t1, t6, 3
+    la t3, stk
+    add t3, t3, t1
+    ld t4, 0(t3)
+    sd t4, 0(t2)
+    j push
 
-set_minus1:
+setm1:
     li t3, -1
     sd t3, 0(t2)
 
-push_stack:
+push:
     addi t6, t6, 1
     slli t1, t6, 3
-    la t2, stack
+    la t2, stk
     add t2, t2, t1
     sd t0, 0(t2)
 
     addi t0, t0, -1
-    j outer_loop
+    j outer
+
 print:
     li s2, 0
 
 print_loop:
-    bge s2, s0, print_end
+    bge s2, s0, newline
 
     slli t0, s2, 3
     la t1, res
     add t1, t1, t0
-    ld a1, 0(t1)
+    ld a0, 0(t1)
 
-    la a0, fmt_int
-    call printf
+    jal ra, print_num
+
+    li a7, 64
+    li a0, 1
+    la a1, space
+    li a2, 1
+    ecall
 
     addi s2, s2, 1
     j print_loop
 
-print_end:
-    la a0, fmt_end
-    call printf
+newline:
+    li a7, 64
+    li a0, 1
+    la a1, nl
+    li a2, 1
+    ecall
 
-done:
-    ld ra, 24(sp)
-    ld s0, 16(sp)
-    ld s1, 8(sp)
-    ld s2, 0(sp)
-    addi sp, sp, 32
+exit:
+    li a7, 93
+    li a0, 0
+    ecall
+
+print_num:
+    la t0, buf
+    addi t1, t0, 31
+    sb zero, 0(t1)
+
+    beqz a0, zero_case
+
+    li t2, 10
+
+loop_num:
+    rem t3, a0, t2
+    addi t3, t3, 48
+    addi t1, t1, -1
+    sb t3, 0(t1)
+
+    div a0, a0, t2
+    bnez a0, loop_num
+    j write_num
+
+zero_case:
+    li t3, 48
+    addi t1, t1, -1
+    sb t3, 0(t1)
+
+write_num:
+    li a7, 64
+    li a0, 1
+    mv a1, t1
+    la t4, buf
+    addi t4, t4, 31
+    sub a2, t4, t1
+    ecall
     ret
+
+.section .rodata
+space: .asciz " "
+nl: .asciz "\n"
