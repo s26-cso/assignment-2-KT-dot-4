@@ -1,111 +1,170 @@
-.section .data
-filename: .asciz "input.txt"
-yes_msg:  .asciz "Yes\n"
-no_msg:   .asciz "No\n"
-
 .section .bss
-buf1: .space 1
-buf2: .space 1
+.align 3
+arr: .space 8000
+res: .space 8000
+stk: .space 8000
+buf: .space 32
 
 .section .text
 .globl main
+.extern atoi
 
 main:
-    li a7, 56
-    li a0, -100
-    la a1, filename
-    li a2, 0
-    li a3, 0
-    ecall
-
     mv s0, a0
+    mv s1, a1
 
-    li a7, 62
-    mv a0, s0
-    li a1, 0
-    li a2, 2
-    ecall
-
-    mv s1, a0
-
-    beqz s1, is_palindrome
-
-    li a7, 62
-    mv a0, s0
-    addi a1, s1, -1
-    li a2, 0
-    ecall
-
-    li a7, 63
-    mv a0, s0
-    la a1, buf1
-    li a2, 1
-    ecall
-
-    lbu t0, buf1
-    li t1, 10
-
-    bne t0, t1, no_newline
-    addi s1, s1, -1
-
-no_newline:
-    li t0, 1
-    ble s1, t0, is_palindrome
+    addi s0, s0, -1
+    blez s0, exit
 
     li s2, 0
-    addi s3, s1, -1
 
-loop:
-    bge s2, s3, is_palindrome
+parse:
+    bge s2, s0, process
 
-    li a7, 62
-    mv a0, s0
-    mv a1, s2
-    li a2, 0
-    ecall
+    addi t0, s2, 1
+    slli t0, t0, 3
+    add t0, s1, t0
+    ld a0, 0(t0)
 
-    li a7, 63
-    mv a0, s0
-    la a1, buf1
-    li a2, 1
-    ecall
+    call atoi
 
-    li a7, 62
-    mv a0, s0
-    mv a1, s3
-    li a2, 0
-    ecall
-
-    li a7, 63
-    mv a0, s0
-    la a1, buf2
-    li a2, 1
-    ecall
-
-    lbu t0, buf1
-    lbu t1, buf2
-
-    bne t0, t1, not_palindrome
+    slli t1, s2, 3
+    la t2, arr
+    add t2, t2, t1
+    sd a0, 0(t2)
 
     addi s2, s2, 1
-    addi s3, s3, -1
-    j loop
+    j parse
 
-is_palindrome:
+process:
+    li t6, -1
+    addi t0, s0, -1
+
+outer:
+    blt t0, zero, print
+
+while:
+    blt t6, zero, after
+
+    slli t1, t6, 3
+    la t2, stk
+    add t2, t2, t1
+    ld t3, 0(t2)
+
+    slli t1, t3, 3
+    la t2, arr
+    add t2, t2, t1
+    ld t4, 0(t2)
+
+    slli t1, t0, 3
+    la t2, arr
+    add t2, t2, t1
+    ld t5, 0(t2)
+
+    bgt t4, t5, after
+
+    addi t6, t6, -1
+    j while
+
+after:
+    slli t1, t0, 3
+    la t2, res
+    add t2, t2, t1
+
+    blt t6, zero, setm1
+
+    slli t1, t6, 3
+    la t3, stk
+    add t3, t3, t1
+    ld t4, 0(t3)
+    sd t4, 0(t2)
+    j push
+
+setm1:
+    li t3, -1
+    sd t3, 0(t2)
+
+push:
+    addi t6, t6, 1
+    slli t1, t6, 3
+    la t2, stk
+    add t2, t2, t1
+    sd t0, 0(t2)
+
+    addi t0, t0, -1
+    j outer
+
+print:
+    li s2, 0
+
+print_loop:
+    bge s2, s0, newline
+
+    slli t0, s2, 3
+    la t1, res
+    add t1, t1, t0
+    ld a0, 0(t1)
+
+    jal ra, print_num
+
+    addi t2, s0, -1
+    beq s2, t2, skip_space
+
     li a7, 64
     li a0, 1
-    la a1, yes_msg
-    li a2, 4
+    la a1, space
+    li a2, 1
     ecall
-    j done
 
-not_palindrome:
+skip_space:
+    addi s2, s2, 1
+    j print_loop
+
+newline:
     li a7, 64
     li a0, 1
-    la a1, no_msg
-    li a2, 3
+    la a1, nl
+    li a2, 1
     ecall
 
-done:
+exit:
     li a0, 0
     ret
+
+print_num:
+    la t0, buf
+    addi t1, t0, 31
+    sb zero, 0(t1)
+
+    beqz a0, zero_case
+
+    li t2, 10
+
+loop_num:
+    rem t3, a0, t2
+    addi t3, t3, 48
+    addi t1, t1, -1
+    sb t3, 0(t1)
+
+    div a0, a0, t2
+    bnez a0, loop_num
+    j write_num
+
+zero_case:
+    li t3, 48
+    addi t1, t1, -1
+    sb t3, 0(t1)
+
+write_num:
+    li a7, 64
+    li a0, 1
+    mv a1, t1
+    la t4, buf
+    addi t4, t4, 31
+    sub a2, t4, t1
+    ecall
+    ret
+
+.section .rodata
+space: .asciz " "
+nl: .asciz "\n"
