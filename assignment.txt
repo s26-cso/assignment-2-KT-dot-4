@@ -1,0 +1,246 @@
+Assignment 2
+Spring 2026 CS2.201: Computer systems organization
+Deadline: 13 April 2026, 23:59
+Total marks: 50 (30 for code, 20 for viva)
+Instructions
+•
+
+Writing complete code with successful execution guarantees full marks.
+Ensure that all edge cases are handled. Hard coded solutions will get 0.
+• Strict plagiarism checks will be performed on all submissions. Any form of
+plagiarism will result in zero marks for this assignment.
+• Add clear and meaningful comments to your code to explain your logic and
+reasoning. This will help you understand your own implementation later and
+make it easier for others to read and follow your work.
+• No AI-generated or publicly available code is permitted. Submissions must
+be your own work. However, you may use AI tools to assist you in coming up
+with approaches.
+• For questions that require you to write assembly, do not simply compile a C
+file and submit the resulting assembly. This will result in a 0.
+
+File structure
+├─ q1/
+│ └─ q1.s
+├─ q2/
+│ └─ q2.s
+├─ q3/
+│ ├─ a/
+│ │ ├─ payload.txt
+│ │ └─ target_<your_github_username>
+│ └─ b/
+│
+├─ payload
+│
+└─ target_<your_github_username>
+├─ q4/
+│ └─ q4.c
+└─ q5/
+└─ q5.s
+Submission for this assignment will be on GitHub Classroom. Accept the
+assignment here.
+
+Far far away, on the recently discovered exoplanet ISS-6701, at the Intergalactic
+Institute of Misinformation Technology, you are stranded after your spaceship
+broke down. Navigate the strange challenges on this planet in order to make it out
+alive.
+
+Question 1 [6 marks]
+You start working for the Computer Sisters Organization, a non-profit initiative by 7
+sisters to help the people of ISS-6701 using the power of computing. For one of their
+databases, they need to store a set of integers. They want to be able to retrieve and
+insert in 𝑂(log 𝑛) time. Using your knowledge from Earth, you point out that a binary
+search tree is best for this job.
+Your task is to implement the following functions corresponding to a binary search
+tree in an assembly file, namely q1.s. Follow the exact function signatures.
+struct Node* make_node(int val); // Returns a pointer to a struct with the
+given value and left and right pointers set to NULL.
+struct Node* insert(struct Node* root, int val); // insert a node with value
+val into the tree with the given root. Return the root.
+struct Node* get(struct Node* root, int val); // Return a pointer to a node
+with value val in the tree. Return NULL if no such node exists.
+int getAtMost(int val, struct Node* root); // Return the greatest value
+present in the tree which is <= val. Return -1 if no such node exists.
+
+The definition of struct Node is as follows:
+struct Node {
+int val;
+struct Node* left;
+struct Node* right;
+};
+q1.s must only contain the definitions of the functions mentioned above. No more,
+
+no less (helper functions are allowed, just don’t expose them using .globl). We
+would recommend writing a main.c so that you can conveniently test your functions.
+
+Question 2 [6 marks]
+At the IgIMT, you sleep through your 8 AM alarm on the day of course registration
+and lowkenuinely get stuck with ISSian toe tickling 101. The reaching assistants of
+the course are very notorious. In particular, reaching assistant Crowtum likes to
+reach out to students and misinform them. He follows a specific pattern in doing so.
+Assume all the students are in a line, and their IQs are known. For any student that
+Crowtum misinforms (say student A), he looks for the first student after A in line with
+a strictly greater IQ than that student. For example, if Crowtum misinforms a student
+with IQ 100, then the next student he misinforms will have an IQ greater than 100,
+
+and will be the first person in line after A to do so. Given a misinformed student, can
+you find out which student will be misinformed next?
+
+Formal statement
+For each element in an array, find the position (0-indexed) of next greater element to
+its right. If there is no greater element to its right, return −1 for that position. Put your
+solution in a single assembly file, q2.s.
+
+Input format
+The elements of the array are space-separated integers (the students’ IQs) given as
+command line arguments.
+
+Output format
+The output should be a space-separated list of integers, where the ith integer is the
+position of the next greater element to the right of the ith element in the input array.
+Here, i is zero-indexed. If there is no greater element, the ith integer should be −1.
+
+Complexity
+Your solution must run in 𝑂(𝑛) time and 𝑂(𝑛) space, where 𝑛 is the number of
+elements in the array. For this, you can use a stack. You’re free to implement the
+stack however you want. You may take the help of this pseudocode:
+function next_greater(arr) {
+let stack = new Stack()
+let result = [-1] * len(arr)
+for (let i = len(arr) - 1; i >= 0; i--) {
+while (!stack.empty() && arr[stack.top()] <= arr[i]) stack.pop()
+if (!stack.empty()) result[i] = stack.top()
+stack.push(i)
+}
+return result
+}
+
+Examples
+./a.out 85 96 70 80 102
+1 4 3 4 -1
+
+./a.out 91 10 99 93 109 90 78
+2 2 4 4 -1 -1 -1
+
+Question 3 [6 marks + 8 bonus marks]
+You go to Room 411 in Trakul Nivas to have some fun with Raj but, in the words of his
+roommate, woh “bas aaya nahi”. You decide to wait for him but see that his laptop is
+open. You finally have the opportunity to find out why his “CSO notes” folder is 10
+terabytes huge. Unfortunately, the laptop is locked. What you do know is that the
+only thing keeping you from accessing the laptop is an executable which asks for the
+password.
+
+Part A [6 marks]
+You are given an executable named target_<your_github_username> in the q3/a/
+directory. This executable takes in input through stdin and check if it’s the correct
+password or not. If the password is correct, it prints out You have passed! If the
+password is incorrect, it prints Sorry, try again.
+Your task is to find out which input will make the executable print out the pass
+message. Since you have the binary, you may use whatever tools are available at
+your disposal to reverse engineer it.
+Passing criterion
+Your solution is correct if the process’s standard output is exactly
+You have passed! when the executable is run with the command
+./target_<your_github_username> < payload.txt.
+
+Part B (Bonus) [8 marks]
+Same scenario as before. You have a target executable present at
+q3/b/target_<your_github_username>, and the required input to make you pass must
+be present in the file called payload.
+The behaviour of the executable remains the same, but the implementation is a bit
+different. Can you find the required input?
+Passing criterion
+There’s a necessary relaxation in the passing criterion as compared to the previous
+part. Your solution is correct if the process’s standard output contains
+You have passed! when the executable is run with the command
+./target_<your_github_username> < payload.
+
+Hints
+• The executable was compiled with the -no-pie and -fno-PIE flags among
+other flags.
+• Perform an object dump to find out more about what the executable is
+doing.
+• Try giving a really large input to the executable. What happens?
+
+Question 4 [6 marks]
+You’ve been tasked with building a simple calc (short for calculator) app for the
+people on this planet. This app must take inputs through the command line in a loop.
+Each input line has the following format:
+<op> <num1> <num2>
+
+Where <op> is the name of a mathematical operation, and <num1> and <num2> are the
+two integer operands. All the arguments are space-separated. Example:
+add 12 9
+
+After receiving each line of input, your app must print out a single integer: the result
+of applying the specified operation to the two operands. Example:
+add 12 9
+21
+mul 3 4
+12
+
+Great! This app works, but only on Earth. The people of ISS-6701 don’t have the
+concept of addition and multiplication. Instead, they have their own set of
+operations. To make your life easier, they said they will provide shared libraries
+containing the implementation of these operations. Hence, your app must be able to
+support arbitrary operations.
+
+Shared library specifications
+For operation <op>, you will be provided with the definition of a function with name
+<op> and signature int, int -> int in a shared library named lib<op>.so in the
+current working directory. The string <op> is guaranteed to be at most 5 characters
+long. This function takes in the 2 integer operands and returns the result of the
+operation. However, these libraries are not provided at the time of compiling your
+code. Therefore, you will have to make sure you’re able to load their shared libraries
+while your app is running.
+
+Memory constraints
+Your app must not consume too much memory. At any point, your app’s memory
+usage must not exceed 2GB. It is given that each lib<op>.so is at most 1.5GB in size.
+
+Here’s an example run of the app on ISS-6701:
+grok 1 512
+8
+unc 32 -34
+98
+
+Programming language
+You must use C to implement this application. No third-party libraries are allowed.
+Put all your code in a single file, q4.c.
+Your task is to build your calc app in a way that fits these constraints. The people of
+ISS-6701 will be extensively testing your app to make sure what you print is in fact
+the output of their operation. Good luck!
+
+Question 5 [6 marks]
+ISSian toe tickling 101 has been a pain but your best friend Greyas helped you get
+through it, by cracking silent jokes with you throughout lectures. He also keeps
+sending you jokes on ThoughtsApp™.
+One day, he claims to have written the greatest joke of all time. It’s a palindrome too!
+You think this is too good to be true so you try to verify his claim. However, the joke
+is so long that it cannot be loaded into memory all at once. You need to find a way to
+check if the joke is a palindrome without loading the entire string into memory.
+
+Formal statement
+You are given a file named input.txt whose contents are a string which can be
+arbitrarily long. You need to read the contents of this file and check if the string is a
+palindrome. You can assume that the string consists only of lowercase alphabets.
+
+Output format
+Print Yes if the string is a palindrome, and No if it is not.
+
+Complexity
+Your solution must run in 𝑂(𝑛) time and 𝑂(1) space, where 𝑛 is the length of the
+string.
+
+Programming language
+Your entire solution must be in a single assembly file, q5.s.
+
+Example
+./a.out # This is run in the same directory as input.txt
+Yes
+
+In this case, the contents of input.txt could be something like abccba, which is a
+palindrome. If the contents were abc, then the output would be No.
+
+All the best!
+
+

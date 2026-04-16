@@ -21,30 +21,30 @@ main:
     sd s1, 8(sp)
     sd s2, 0(sp)
 
-    mv s0, a0          # argc
-    mv s1, a1          # argv
+    mv s0, a0          # s0 = argc
+    mv s1, a1          # s1 = argv
 
-    addi s0, s0, -1    # n = argc - 1
+    addi s0, s0, -1    # n = s0 = argc - 1
     blez s0, done
 
-    li t0, 0           # i = 0
+    li s2, 0           # s2 = i = 0
 
 parse_loop:
-    bge t0, s0, process
+    bge s2, s0, process
 
-    addi t1, t0, 1
+    addi t1, s2, 1
     slli t1, t1, 3
     add t1, s1, t1     # &argv[i+1]
     ld a0, 0(t1)
 
     call atoi          # convert string → int
 
-    slli t2, t0, 3
+    slli t2, s2, 3
     la t3, arr
     add t3, t3, t2
     sd a0, 0(t3)       # arr[i] = value
 
-    addi t0, t0, 1
+    addi s2, s2, 1
     j parse_loop
 
 process:
@@ -111,12 +111,12 @@ push_stack:
     j outer_loop
 
 print:
-    li t0, 0
+    li s2, 0           # s2 = i = 0
 
 print_loop:
-    bge t0, s0, print_end
+    bge s2, s0, print_end
 
-    slli t1, t0, 3
+    slli t1, s2, 3
     la t2, res
     add t2, t2, t1
     ld a1, 0(t2)
@@ -124,7 +124,7 @@ print_loop:
     la a0, fmt_int
     call printf
 
-    addi t0, t0, 1
+    addi s2, s2, 1
     j print_loop
 
 print_end:

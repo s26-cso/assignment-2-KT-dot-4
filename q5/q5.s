@@ -1,7 +1,7 @@
     .section .data
 filename: .asciz "input.txt"
-yes_msg:  .asciz "Yes\n"
-no_msg:   .asciz "No\n"
+yes_msg:  .asciz "Yes"
+no_msg:   .asciz "No"
 
     .section .bss
 buf1: .space 1
@@ -94,7 +94,7 @@ is_palindrome:
     li a7, 64              # write
     li a0, 1               # stdout
     la a1, yes_msg
-    li a2, 4
+    li a2, 3
     ecall
     j exit
 
@@ -102,7 +102,7 @@ not_palindrome:
     li a7, 64
     li a0, 1
     la a1, no_msg
-    li a2, 3
+    li a2, 2
     ecall
 
 exit:
