@@ -49,7 +49,8 @@ main:
     addi s1, s1, -1
 
 no_newline:
-    ble s1, 1, is_palindrome
+    li t0, 1
+    ble s1, t0, is_palindrome
 
     li s2, 0
     addi s3, s1, -1
@@ -96,7 +97,7 @@ is_palindrome:
     la a1, yes_msg
     li a2, 4
     ecall
-    j exit
+    j done
 
 not_palindrome:
     li a7, 64
@@ -105,10 +106,6 @@ not_palindrome:
     li a2, 3
     ecall
 
-exit:
-    li a7, 57
-    mv a0, s0
-    ecall
-
+done:
     li a0, 0
     ret

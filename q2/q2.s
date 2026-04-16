@@ -6,10 +6,10 @@ stk: .space 8000
 buf: .space 32
 
 .section .text
-.globl _start
+.globl main
 .extern atoi
 
-_start:
+main:
     mv s0, a0
     mv s1, a1
 
@@ -124,9 +124,8 @@ newline:
     ecall
 
 exit:
-    li a7, 93
     li a0, 0
-    ecall
+    ret
 
 print_num:
     la t0, buf
