@@ -1,86 +1,92 @@
-    .section .data
+.section .data
 filename: .asciz "input.txt"
-yes_msg:  .asciz "Yes"
-no_msg:   .asciz "No"
+yes_msg:  .asciz "Yes\n"
+no_msg:   .asciz "No\n"
 
-    .section .bss
+.section .bss
 buf1: .space 1
 buf2: .space 1
 
-    .section .text
-    .globl _start
+.section .text
+.globl _start
 
 _start:
 
-    li a7, 56              # sys_openat
-    li a0, -100            # AT_FDCWD
+   
+    li a7, 56
+    li a0, -100
     la a1, filename
-    li a2, 0               # O_RDONLY
+    li a2, 0
     li a3, 0
     ecall
 
-    mv s0, a0              # s0 = fd
+    mv s0, a0              # fd
 
-    li a7, 62              # sys_lseek
+    li a7, 62
     mv a0, s0
     li a1, 0
-    li a2, 2               # SEEK_END
+    li a2, 2
     ecall
 
-    mv s1, a0              # s1 = file size
+    mv s1, a0              # file size
 
+    # empty file → palindrome
     beqz s1, is_palindrome
 
-    li a7, 62              # lseek
+   
+    li a7, 62
     mv a0, s0
-    addi a1, s1, -1        # size-1
-    li a2, 0               # SEEK_SET
+    addi a1, s1, -1
+    li a2, 0
     ecall
 
-    li a7, 63              # read
+    li a7, 63
     mv a0, s0
     la a1, buf1
     li a2, 1
     ecall
 
-    lbu t0, buf1           # last char
-    li t1, 10              # '\n'
+    lbu t0, buf1
+    li t1, 10              
 
     bne t0, t1, no_newline
-
-    addi s1, s1, -1        # ignore newline
+    addi s1, s1, -1        
 
 no_newline:
 
-    li s2, 0               # left = 0
-    addi s3, s1, -1        # right = size - 1
+    li s2, 0               
+    addi s3, s1, -1        
+
 loop:
     bge s2, s3, is_palindrome
 
-    li a7, 62              # lseek
+    
+    li a7, 62
     mv a0, s0
     mv a1, s2
-    li a2, 0               # SEEK_SET
+    li a2, 0
     ecall
 
-    li a7, 63              # read
+    li a7, 63
     mv a0, s0
     la a1, buf1
     li a2, 1
     ecall
 
-    li a7, 62              # lseek
+    
+    li a7, 62
     mv a0, s0
     mv a1, s3
-    li a2, 0               # SEEK_SET
+    li a2, 0
     ecall
 
-    li a7, 63              # read
+    li a7, 63
     mv a0, s0
     la a1, buf2
     li a2, 1
     ecall
 
+    
     lbu t0, buf1
     lbu t1, buf2
 
@@ -91,10 +97,10 @@ loop:
     j loop
 
 is_palindrome:
-    li a7, 64              # write
-    li a0, 1               # stdout
+    li a7, 64
+    li a0, 1
     la a1, yes_msg
-    li a2, 3
+    li a2, 4               
     ecall
     j exit
 
@@ -102,7 +108,7 @@ not_palindrome:
     li a7, 64
     li a0, 1
     la a1, no_msg
-    li a2, 2
+    li a2, 3               
     ecall
 
 exit:
